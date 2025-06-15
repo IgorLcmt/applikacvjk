@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 from get_clean_html import analyze_url, compose_message# <- import funkcji
 import pandas as pd
 import numpy as np
@@ -30,11 +30,12 @@ if st.button("Analizuj stronę"):
                 st.write(result)
 
                 # Step 2: Embed the result using OpenAI
-                response = openai.Embedding.create(
-                    input=result,
-                    model="text-embedding-3-large"
+                client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+                response = client.embeddings.create(
+                    model="text-embedding-3-large",
+                    input=result
                 )
-                query_vector = np.array(response["data"][0]["embedding"]).reshape(1, -1)
+                embedding = response.data[0].embedding
 
                 # Step 3: Compute similarity
                 similarity_scores = cosine_similarity(query_vector, vectors)[0]
