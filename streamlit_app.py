@@ -20,9 +20,6 @@ except Exception as e:
     st.error(f"❌ Nie udało się załadować danych: {e}")
     st.stop()
 
-vectors = normalize(vectors, axis=1)
-query_vector = normalize(query_vector, axis=1)
-
 st.write("Vector shape:", vectors.shape)
 st.write("Query shape:", query_vector.shape)
 
@@ -44,7 +41,10 @@ if st.button("Analizuj stronę"):
                 )
                 embedding = response.data[0].embedding
                 query_vector = normalize(np.array(embedding).reshape(1, -1), axis=1)
-                
+
+                vectors = normalize(vectors, axis=1)
+                query_vector = normalize(query_vector, axis=1)
+
                 # Step 3: Compute similarity
                 similarity_scores = cosine_similarity(query_vector, vectors)[0]
                 top_indices = similarity_scores.argsort()[::-1][:5]
