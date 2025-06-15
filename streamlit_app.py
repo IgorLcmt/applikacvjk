@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 from get_clean_html import analyze_url, compose_message# <- import funkcji
 
-st.title("Analiza strony HTML przez AI")
+st.title("Transaction finder 🔍")
 
 url = st.text_input("Podaj URL do przeanalizowania:")
 
