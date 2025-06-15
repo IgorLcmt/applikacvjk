@@ -51,3 +51,9 @@ np.save("embedded_vectors.npy", np.array(embeddings, dtype=np.float32))
 df.to_csv("embedded_metadata.csv", index=False)
 
 print("✅ Embeddings and metadata saved.")
+
+with open("app_data/embedded_metadata.csv", "rb") as f:
+    st.download_button("📥 Pobierz metadane CSV", f, file_name="embedded_metadata.csv")
+
+with open("app_data/embedded_vectors.npy", "rb") as f:
+    st.download_button("📥 Pobierz embeddingi (npy)", f, file_name="embedded_vectors.npy")
