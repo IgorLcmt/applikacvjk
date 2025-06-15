@@ -47,9 +47,15 @@ for i, desc in enumerate(df["Cleaned Description"]):
         embeddings.append([0.0] * 3072)
 
 # 5. Save to files
-np.save("app_data/embedded_vectors.npy", np.array(embeddings, dtype=np.float32))
-df.to_csv("app_data/embedded_metadata.csv", index=False)
+np.save("embedded_vectors.npy", np.array(embeddings, dtype=np.float32))
+df.to_csv("embedded_metadata.csv", index=False)
 
-print("✅ Embeddings and metadata saved.")
+st.subheader("📥 Eksport danych:")
+
+with open("app_data/embedded_metadata.csv", "rb") as f:
+    st.download_button("📥 Pobierz metadane CSV", f, file_name="embedded_metadata.csv")
+
+with open("app_data/embedded_vectors.npy", "rb") as f:
+    st.download_button("📥 Pobierz embeddingi (NumPy)", f, file_name="embedded_vectors.npy")
 
 
