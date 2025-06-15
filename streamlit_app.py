@@ -12,7 +12,7 @@ st.title("Analiza strony HTML przez AI")
 url = st.text_input("Podaj URL do przeanalizowania:")
 
 try:
-    metadata = pd.read_csv("app_data/embedded_metadata.csv")
+    data = np.load("app_data/embedded_vectors_compressed.npz")
     vectors = np.load("app_data/embedded_vectors.npy")
 except Exception as e:
     st.error(f"❌ Nie udało się załadować danych wektorowych: {e}")
