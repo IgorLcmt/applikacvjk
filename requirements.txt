@@ -1,7 +1,0 @@
-streamlit
-openai
-faiss-cpu
-scikit-learn
-pandas
-numpy
-tiktoken
