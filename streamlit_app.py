@@ -6,6 +6,7 @@ import numpy as np
 import re
 import os
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import normalize
 
 st.title("Analiza strony HTML przez AI")
 
@@ -19,7 +20,11 @@ except Exception as e:
     st.error(f"❌ Nie udało się załadować danych: {e}")
     st.stop()
 
-st.write(metadata.columns.tolist())
+vectors = normalize(vectors, axis=1)
+query_vector = normalize(query_vector, axis=1)
+
+st.write("Vector shape:", vectors.shape)
+st.write("Query shape:", query_vector.shape)
 
 if st.button("Analizuj stronę"):
     if not url:
