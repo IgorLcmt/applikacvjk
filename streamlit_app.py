@@ -5,57 +5,58 @@ import pandas as pd
 import numpy as np
 import re
 import os
+from sklearn.metrics.pairwise import cosine_similarity
 
 st.title("Analiza strony HTML przez AI")
 
 url = st.text_input("Podaj URL do przeanalizowania:")
 
+try:
+    metadata = pd.read_csv("app_data/embedded_metadata.csv")
+    vectors = np.load("app_data/embedded_vectors.npy")
+except Exception as e:
+    st.error(f"❌ Nie udało się załadować danych wektorowych: {e}")
+    st.stop()
+    
 if st.button("Analizuj stronę"):
     if not url:
         st.warning("Podaj poprawny URL.")
     else:
-        with st.spinner("Pobieram i analizuję treść..."):
+        with st.spinner("Analizuję treść i szukam podobnych transakcjić..."):
             try:
                 result = analyze_url(url)
                 st.subheader("Wynik analizy AI:")
                 st.write(result)
+
+                # Step 2: Embed the result using OpenAI
+                response = openai.Embedding.create(
+                    input=result,
+                    model="text-embedding-3-large"
+                )
+                query_vector = np.array(response["data"][0]["embedding"]).reshape(1, -1)
+
+                # Step 3: Compute similarity
+                similarity_scores = cosine_similarity(query_vector, vectors)[0]
+                top_indices = similarity_scores.argsort()[::-1][:5]
+                top_matches = metadata.iloc[top_indices].copy()
+                top_matches["Similarity"] = similarity_scores[top_indices]
+
+                # Step 4: Display results
+                st.subheader("🔗 Najbardziej podobne transakcje:")
+
+                for i, row in top_matches.iterrows():
+                    st.markdown(f"""
+                    **{row['Target/Issuer Name MI']}**
+                    - 📊 Podobieństwo: `{row['Similarity']:.2f}`
+                    - 🏢 Branża: {row.get('Primary Industry', 'Brak')}
+                    - 💼 Opis: {row.get('Cleaned Description', '')[:300]}...
+                    - 📅 Data: {row.get('Announcement Date', 'Nieznana')}
+                    """)
+
             except Exception as e:
-                st.error(f"Wystąpił błąd: {e}")
+                st.error(f"❌ Wystąpił błąd podczas analizy: {e}")
 
-df = pd.read_excel("app_data/Database.xlsx", sheet_name="Arkusz1")
 
-# 3. Clean up descriptions
-def clean_description(text: str) -> str:
-    if not isinstance(text, str):
-        return ""
-    return re.sub(r"^[^()]*\(([^()]*)\)", r"\1", text).strip()
 
-df["Cleaned Description"] = df["Business Description"].apply(clean_description)
-
-# 4. Embed cleaned descriptions
-embeddings = []
-for i, desc in enumerate(df["Cleaned Description"]):
-    try:
-        response = openai.Embedding.create(
-            input=desc,
-            model="text-embedding-3-large"
-        )
-        embedding = response["data"][0]["embedding"]
-        embeddings.append(embedding)
-    except Exception as e:
-        print(f"Error on row {i}: {e}")
-        embeddings.append([0.0] * 3072)
-
-# 5. Save to files
-np.save("embedded_vectors.npy", np.array(embeddings, dtype=np.float32))
-df.to_csv("embedded_metadata.csv", index=False)
-
-st.subheader("📥 Eksport danych:")
-
-with open("app_data/embedded_metadata.csv", "rb") as f:
-    st.download_button("📥 Pobierz metadane CSV", f, file_name="embedded_metadata.csv")
-
-with open("app_data/embedded_vectors.npy", "rb") as f:
-    st.download_button("📥 Pobierz embeddingi (NumPy)", f, file_name="embedded_vectors.npy")
 
 
