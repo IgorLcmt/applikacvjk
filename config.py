@@ -1,0 +1,10 @@
+# config.py
+
+VECTOR_DB_PATH = "app_data/vector_db.index"
+VECTOR_MAPPING_PATH = "app_data/vector_mapping.pkl"
+
+MAX_TOKENS = 8000
+BATCH_SIZE = 100
+MAX_TEXT_LENGTH = 4000
+DEFAULT_SIMILARITY_THRESHOLD = 0.3
+RATE_LIMIT_DELAY = 1.0
