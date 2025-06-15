@@ -36,7 +36,8 @@ if st.button("Analizuj stronę"):
                     input=result
                 )
                 embedding = response.data[0].embedding
-
+                query_vector = np.array(embedding).reshape(1, -1)
+                
                 # Step 3: Compute similarity
                 similarity_scores = cosine_similarity(query_vector, vectors)[0]
                 top_indices = similarity_scores.argsort()[::-1][:5]
