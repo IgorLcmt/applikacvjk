@@ -2,7 +2,7 @@ import requests
 import streamlit as st
 from bs4 import BeautifulSoup
 from openai import OpenAI
-
+from functools import lru_cache
 
 def compose_message(clean_text: str) -> str:
     return f"""Analyze this text:\n\n{clean_text}\n\nStep 1: Summarize the company in fluent, neutral business English. Include:
@@ -28,14 +28,19 @@ def compose_message(clean_text: str) -> str:
         Keyword Phrase 1 OR Keyword Phrase 2 OR Keyword Phrase 3 OR ...
         ---"""
 
-
-def analyze_url(url: str):
-    # Step 1: Get the HTML
-    response = requests.get(url)
+@lru_cache(maxsize=32)
+def fetch_and_clean_url(url: str) -> str:
+    response = requests.get(url, timeout=10)
     soup = BeautifulSoup(response.content, 'html.parser')
-    clean_text = soup.get_text(separator="\n", strip=True)
-    # Get API and it's response
+    
+    # Remove UI-related elements
+    for tag in soup(['script', 'style', 'nav', 'footer']):
+        tag.decompose()
 
+    text = soup.get_text(separator='\n', strip=True)
+    return text[:10000]
+    
+def analyze_url(url: str):
     client_secret = st.secrets["openai"]["api_key"]
     client = OpenAI(api_key=client_secret)
 
