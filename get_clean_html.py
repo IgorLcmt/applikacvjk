@@ -12,7 +12,7 @@ def compose_message(clean_text: str) -> str:
         - Customer types (e.g., industrial clients, ecommerce, distributors)
         - Geographic presence if available
 
-        Step 2: Immediately after the summary, return 20 to 40 precise business keyword phrases that best describe the company’s offerings.
+        Step 2: Immediately after the summary, return 10 to 30 precise business keyword phrases that best describe the company’s offerings.
         - Capitalized like a proper noun (e.g., 'LED Lighting Distribution')
         - Separated by ' OR '
         - Relevant to operations, services, technologies, and value proposition
