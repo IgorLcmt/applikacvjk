@@ -3,8 +3,6 @@ from openai import OpenAI
 from get_clean_html import analyze_url, compose_message# <- import funkcji
 import pandas as pd
 import numpy as np
-import re
-import os
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import normalize
 
@@ -12,28 +10,28 @@ st.title("Analiza strony HTML przez AI")
 
 url = st.text_input("Podaj URL do przeanalizowania:")
 
+# Load data and normalize vectors
 try:
     data = np.load("app_data/embedded_vectors_compressed.npz")
-    vectors = data["vectors"]
+    vectors = normalize(data["vectors"], axis=1)
     metadata = pd.read_csv("app_data/embedded_metadata.csv")
+    metadata.columns = metadata.columns.str.strip()
 except Exception as e:
     st.error(f"❌ Nie udało się załadować danych: {e}")
     st.stop()
 
-st.write("Vector shape:", vectors.shape)
-st.write("Query shape:", query_vector.shape)
-
 if st.button("Analizuj stronę"):
     if not url:
-        st.warning("Podaj poprawny URL.")
+        st.warning("⚠️ Podaj poprawny URL.")
     else:
-        with st.spinner("Analizuję treść i szukam podobnych transakcjić..."):
+        with st.spinner("Analizuję treść i szukam podobnych transakcji..."):
             try:
+                # Step 1: AI summary
                 result = analyze_url(url)
-                st.subheader("Wynik analizy AI:")
+                st.subheader("📄 Wynik analizy AI:")
                 st.write(result)
 
-                # Step 2: Embed the result using OpenAI
+                # Step 2: Embed result
                 client = OpenAI(api_key=st.secrets["openai"]["api_key"])
                 response = client.embeddings.create(
                     model="text-embedding-3-large",
@@ -42,26 +40,26 @@ if st.button("Analizuj stronę"):
                 embedding = response.data[0].embedding
                 query_vector = normalize(np.array(embedding).reshape(1, -1), axis=1)
 
-                vectors = normalize(vectors, axis=1)
-                query_vector = normalize(query_vector, axis=1)
-
-                # Step 3: Compute similarity
+                # Step 3: Similarity
                 similarity_scores = cosine_similarity(query_vector, vectors)[0]
                 top_indices = similarity_scores.argsort()[::-1][:5]
                 top_matches = metadata.iloc[top_indices].copy()
                 top_matches["Similarity"] = similarity_scores[top_indices]
+                top_matches = top_matches[[
+                    "Target/Issuer Name", 
+                    "Primary Industry", 
+                    "Announcement Date", 
+                    "Cleaned Description", 
+                    "Similarity"
+                ]]
 
-                # Step 4: Display results
+                # Step 4: Display
                 st.subheader("🔗 Najbardziej podobne transakcje:")
+                st.dataframe(top_matches)
 
-                for i, row in top_matches.iterrows():
-                    st.markdown(f"""
-                    **{row['Target/Issuer Name']}**
-                    - 📊 Podobieństwo: `{row['Similarity']:.2f}`
-                    - 🏢 Branża: {row.get('Primary Industry', 'Brak')}
-                    - 💼 Opis: {row.get('Cleaned Description', '')[:300]}...
-                    - 📅 Data: {row.get('Announcement Date ', 'Nieznana')}
-                    """)
+                # Step 5: Download
+                csv = top_matches.to_csv(index=False).encode("utf-8")
+                st.download_button("📥 Pobierz jako CSV", data=csv, file_name="similar_transactions.csv", mime="text/csv")
 
             except Exception as e:
                 st.error(f"❌ Wystąpił błąd podczas analizy: {e}")
