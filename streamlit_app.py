@@ -13,9 +13,10 @@ url = st.text_input("Podaj URL do przeanalizowania:")
 
 try:
     data = np.load("app_data/embedded_vectors_compressed.npz")
-    vectors = np.load("app_data/embedded_vectors.npy")
+    vectors = data["vectors"]
+    metadata = pd.read_csv("app_data/embedded_metadata.csv")
 except Exception as e:
-    st.error(f"❌ Nie udało się załadować danych wektorowych: {e}")
+    st.error(f"❌ Nie udało się załadować danych: {e}")
     st.stop()
     
 if st.button("Analizuj stronę"):
