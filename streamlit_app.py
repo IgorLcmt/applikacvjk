@@ -51,11 +51,11 @@ if st.button("Analizuj stronę"):
 
                 for i, row in top_matches.iterrows():
                     st.markdown(f"""
-                    **{row['Target/Issuer Name MI']}**
+                    **{row['Target/Issuer Name']}**
                     - 📊 Podobieństwo: `{row['Similarity']:.2f}`
                     - 🏢 Branża: {row.get('Primary Industry', 'Brak')}
                     - 💼 Opis: {row.get('Cleaned Description', '')[:300]}...
-                    - 📅 Data: {row.get('Announcement Date', 'Nieznana')}
+                    - 📅 Data: {row.get('Announcement Date ', 'Nieznana')}
                     """)
 
             except Exception as e:
