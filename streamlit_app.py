@@ -22,7 +22,7 @@ if st.button("Analizuj stronę"):
             except Exception as e:
                 st.error(f"Wystąpił błąd: {e}")
 
-df = pd.read_excel("Database.xlsx", sheet_name="Arkusz1")
+df = pd.read_excel("app_data/Database.xlsx", sheet_name="Arkusz1")
 
 # 3. Clean up descriptions
 def clean_description(text: str) -> str:
