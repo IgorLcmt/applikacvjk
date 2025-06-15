@@ -18,7 +18,9 @@ try:
 except Exception as e:
     st.error(f"❌ Nie udało się załadować danych: {e}")
     st.stop()
-    
+
+st.write(metadata.columns.tolist())
+
 if st.button("Analizuj stronę"):
     if not url:
         st.warning("Podaj poprawny URL.")
